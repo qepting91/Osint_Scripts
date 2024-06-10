@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<link rel="stylesheet"
+href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+<style>
+.dork-link {
+display: block;
+margin-bottom: 10px;
+color: #1a73e8; /* Google blue */
+text-decoration: none;
+}
+.dork-link:hover {
+text-decoration: underline;
+}
+#output, #namesContainer {
+margin-top: 20px;
+
+}
+.name-input {
+margin-bottom: 5px;
+}
+select, input[type="text"] {
+width: 95%; /* Makes input fields take up most of the sidebar
+width */
+padding: 5px; /* Adds padding for better readability */
+margin-top: 5px; /* Adds spacing above each field */
+}
+#category {
+font-size: 1.2em; /* Increases font size for better visibility */
+}
+.button-container {
+display: flex;
+justify-content: center; /* Center horizontally */
+align-items: center; /* Center vertically */
+margin-top: 10px;
+}
+button {
+background-color: #4285f4; /* Google Blue background for the
+button */
+color: red;
+padding: 10px 20px;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+display: flex;
+justify-content: center; /* Center text horizontally */
+align-items: center; /* Center text vertically */
+height: 40px; /* Fixed height for better control */
+width: auto;
+box-sizing: border-box; /* Includes padding in the width and
+height */
+
+}
+button:hover {
+background-color: #357ae8; /* Darker Google Blue on hover */
+}
+</style>
+</head>
+<body>
+<form id="searchForm">
+<div id="namesContainer">
+<div class="name-input">
+<label>Enter Name:</label>
+<input type="text" name="names" placeholder="Enter a name">
+<label>Operator:</label>
+<select name="operators">
+<option value="AND">AND</option>
+<option value="OR">OR</option>
+</select>
+</div>
+</div>
+<div class="button-container">
+<button type="button" id="addNameButton">Add Another Name</button>
+<button type="button" id="clearFormButton">Clear Form</button>
+<button type="button" id="generateButton">Generate Dork</button>
+</div>
+<div>
+<label for="category">Select Category:</label>
+<select id="category" name="category"></select>
+</div>
+</form>
+<div id="output"></div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+google.script.run.withSuccessHandler(function(categories) {
+
+var select = document.getElementById('category');
+categories.forEach(function(cat) {
+var option = document.createElement('option');
+option.text = cat;
+option.value = cat;
+select.appendChild(option);
+});
+}).getCategories();
+document.getElementById('addNameButton').addEventListener('click',
+addNameField);
+document.getElementById('generateButton').addEventListener('click',
+submitForm);
+document.getElementById('clearFormButton').addEventListener('click',
+clearForm);
+});
+function addNameField() {
+var container = document.getElementById('namesContainer');
+var newInput = document.createElement('div');
+newInput.className = 'name-input';
+newInput.innerHTML = `
+<label>Enter Name:</label>
+<input type="text" name="names" placeholder="Enter a name">
+<label>Operator:</label>
+<select name="operators">
+<option value="AND">AND</option>
+<option value="OR">OR</option>
+</select>`;
+container.appendChild(newInput);
+}
+
+function submitForm() {
+var form = document.getElementById('searchForm');
+var formData = new FormData(form);
+var data = { names: [], operators: [], category:
+formData.get('category') };
+formData.forEach((value, key) => {
+if (key === 'names' && value.trim() !== '') {
+data.names.push(value.trim());
+} else if (key === 'operators') {
+data.operators.push(value);
+}
+});
+var query = '';
+data.names.forEach((name, index) => {
+query += name;
+if (index < data.operators.length && index + 1 <
+data.names.length) {
+
+query += ' ' + data.operators[index] + ' ';
+}
+});
+google.script.run.withSuccessHandler(function(results) {
+var output = document.getElementById('output');
+output.innerHTML = '';
+if (Array.isArray(results)) {
+results.forEach(function(dork) {
+var link = document.createElement('a');
+link.href =
+
+`https://www.google.com/search?q=${encodeURIComponent(dork)}`;
+
+link.target = '_blank';
+link.textContent = dork;
+link.className = 'dork-link';
+
+output.appendChild(link);
+output.appendChild(document.createElement('br'));
+});
+} else {
+output.textContent = 'No results to display';
+}
+}).generateDork(query, data.category);
+}
+function clearForm() {
+// Clear the inputs and output
+document.getElementById('searchForm').reset();
+document.getElementById('output').innerHTML = '';
+// Remove all additional name inputs
+const container = document.getElementById('namesContainer');
+while (container.children.length > 1) {
+container.removeChild(container.lastChild);
+}
+}
+</script>
+</body>
+</html>

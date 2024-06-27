@@ -12,6 +12,7 @@ This repository contains a collection of scripts for Open Source Intelligence (O
 - [Google Colab Scripts](google_colab/README.md)
   - [Username Fuzzer](google_colab/username.py)
   - [Username Enumeration](google_colab/enumerate.py)
+  - [Marple Script](google_colab/marple.py)
 - [License](LICENSE)
 
 ## Google Sheets and Google Apps Script
